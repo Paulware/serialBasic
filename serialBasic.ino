@@ -9,7 +9,7 @@ DebugUtilities debugUtils;
 void setup()
 {  
   Serial.begin (115200);
-  Serial.println ( "Arduino BASIC, enter ? to display commands" );
+  debugUtils.printPSTR ( PSTR ( "Arduino BASIC...enter ? to display keywords\nTo use the Arduino IDE\n select 'Carriage return' rather than 'no line ending' in the Serial Monitor\n" ));
 }
 
 void loop()

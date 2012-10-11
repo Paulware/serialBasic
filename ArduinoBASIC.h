@@ -10,8 +10,10 @@ class ArduinoBASIC
 {
 public:          
   ArduinoBASIC();
-  PSTRStrings commands;
+  PSTRStrings commands;   // BASIC commands
+  PSTRStrings statements; // BASIC Statements
   ScriptEEPROM eepromProgram;  
+  
   void handleChar ( char ch );
   
 private:

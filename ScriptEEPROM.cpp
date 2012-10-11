@@ -399,7 +399,7 @@ void ScriptEEPROM::showSteps ()
       value = EEPROM.read (index++);  
     }
     if (!step)
-      debugUtils.printPSTR ( PSTR("Program is empty\n") );
+      debugUtils.printPSTR ( PSTR("Program is empty\r\n") );
   }  
 }
 
