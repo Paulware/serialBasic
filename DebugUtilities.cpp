@@ -6,7 +6,6 @@
 DebugUtilities::DebugUtilities ()
 {
 }
-
 // Print a string from program memory
 void DebugUtilities::printPSTR ( PGM_P s) 
 {
@@ -16,6 +15,14 @@ void DebugUtilities::printPSTR ( PGM_P s)
     Serial.print (c);
   #endif
 } 
+
+void DebugUtilities::showNumber ( PGM_P s, int number )
+{
+  #ifdef DEBUGIT
+  printPSTR ( s );
+  Serial.println ( number );
+  #endif
+}
 
 boolean DebugUtilities::debugging () 
 {

@@ -1,81 +1,101 @@
 #include "ArduinoBASIC.h"
-#define NUMBER_OF_COMMANDS 4
-#define NUMBER_OF_STATEMENTS 4
-
-ArduinoBASIC::ArduinoBASIC():commands(NUMBER_OF_COMMANDS), statements(NUMBER_OF_STATEMENTS), debugUtils()
-{
-  commands.addString ( PSTR ( "?"));           
-  commands.addString ( PSTR ( "showSteps" ) );
-  commands.addString ( PSTR ( "clear" ) );  
-  commands.addString ( PSTR ( "help" ) );
+#define NUMBER_OF_COMMANDS 5
+#define NUMBER_OF_STATEMENTS 12
   
-  statements.addString ( PSTR ( "set") );
-  statements.addString ( PSTR ( "jump" ));
-  statements.addString ( PSTR ( "if" ) );
-  statements.addString ( PSTR ( "endif" ) );
+ArduinoBASIC::ArduinoBASIC(): 
+  commands(NUMBER_OF_COMMANDS), 
+  statements(NUMBER_OF_STATEMENTS), 
+  eepromProgram (&statements),
+  debugUtils()
+{
+  lastStatement = -1;
+  eepromProgram.callback = 0;
+  
+  commands.addString ( PSTR ( "?"));            //  0
+  commands.addString ( PSTR ( "list" ));        //  1
+  commands.addString ( PSTR ( "clear" ));       //  2
+  commands.addString ( PSTR ( "dump" ));        //  3
+  commands.addString ( PSTR ( "run" ));         //  4
+  
+  statements.addString ( PSTR ( "endtest" ));   //  0
+  statements.addString ( PSTR ( "wait" ));      //  1
+  statements.addString ( PSTR ( "relay" ));     //  2
+  statements.addString ( PSTR ( "echo" ));      //  3
+  statements.addString ( PSTR ( "endif" ));     //  4
+  statements.addString ( PSTR ( "if" ) );       //  5
+  statements.addString ( PSTR ( "jump" ));      //  6
+  statements.addString ( PSTR ( "lcd" ));       //  7
+  statements.addString ( PSTR ( "read" ));      //  8   
+  statements.addString ( PSTR ( "set"));        //  9 
+  statements.addString ( PSTR ( "callback"));   // 10
+  statements.addString ( PSTR ( "thermistor")); // 11
+}
+
+void ArduinoBASIC::setCallback (VoidType _callback)
+{
+  eepromProgram.callback = _callback;
+}
+
+void ArduinoBASIC::init ()
+{
+  // callback = _callback;
+  eepromProgram.init();
+}
+
+void ArduinoBASIC::continueStatement ( char ch )
+{
+  if (ch == 13)
+  {
+    eepromProgram.addCh (0, true);
+    eepromProgram.addCh (0, false);
+  }  
+  else  
+    eepromProgram.addCh (ch, true);
 }
 
 void ArduinoBASIC::handleChar ( char ch )
 {
-  int gotCommand = commands.matchCommand (ch);
-  int gotStatement = statements.matchCommand (ch);
-  static int lastStatement = 0;
-  
-  if (gotCommand > -1)
-    debugUtils.printPSTR ( PSTR ( "\n" ) );
+  int gotStatement = statements.matchCommand (ch, false);
+  int gotCommand = commands.matchCommand (ch, false);
     
-  switch (gotCommand)
-  {
-    case 0:
-      debugUtils.printPSTR ( PSTR ( "Recognized commands: \n" ));
-      for (int i=1; i<NUMBER_OF_COMMANDS; i++)
-      {
-        Serial.print ( i );
-        debugUtils.printPSTR ( PSTR ( ")" ) );
-        commands.printString(i);
-        debugUtils.printPSTR ( PSTR ( "\n" ) );
-      }
-      break;
-    case 1:
-      eepromProgram.showSteps();
-      break;
-    case 2:
-      eepromProgram.clear();
-      break;
-    case 3:
-      debugUtils.printPSTR ( PSTR ( "Recognized statements: \n" ));
-      for (int i=0; i<NUMBER_OF_STATEMENTS; i++)
-      {
-        Serial.print ( i );
-        debugUtils.printPSTR ( PSTR ( ")" ) );
-        statements.printString(i);
-        debugUtils.printPSTR ( PSTR ( "\n" ) );
-      }
-      break;
-  
-    default:
-      break;
-  }
-  
-  if (lastStatement > -1) // Saving data to eeprom
-  {
-    if (ch == 10) 
-      debugUtils.printPSTR ( PSTR ( "done") );
-    lastStatement = -1;
+  if (lastStatement > -1)
+  { // Save uninterpretted parameters to EEPROM
+    continueStatement (ch); 
+    if (ch == 13) 
+      lastStatement = -1; // done
   }
   else if (gotStatement > -1)
   { 
-    switch(gotStatement)
+    eepromProgram.addCh (gotStatement, true);
+    lastStatement = gotStatement;
+  }
+  else // Check for command
+  {
+    if (gotCommand > -1)
+      debugUtils.printPSTR ( PSTR ( "\n" ) );
+    
+    switch (gotCommand)
     {
-      case 3: // addStep
-        //if (param = eepromTest.findCommand ( param , &cmd))  
-        //  (void) eepromTest.addStep(cmd, param);
-        //else
-        //  Serial.println ( "Bad step" );  
+      case 0:
+        debugUtils.printPSTR ( PSTR ( "Recognized commands: \n" ));
+        commands.show(1,NUMBER_OF_COMMANDS);
+        debugUtils.printPSTR ( PSTR ( "Recognized BASIC-like statements: \n" ));
+        statements.show(1,NUMBER_OF_STATEMENTS);
         break;
+      case 1:
+        eepromProgram.showSteps();
+        break;
+      case 2:
+        eepromProgram.clear();
+        break;
+      case 3:
+        eepromProgram.dump();
+        break;
+      case 4: 
+        eepromProgram.run();
+        break;      
       default:
         break;
     }
-    lastStatement = gotStatement;
   }
 }

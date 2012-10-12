@@ -8,6 +8,7 @@ class DebugUtilities
     DebugUtilities();  
     boolean debugging (); 
     void printPSTR ( PGM_P s );
+    void showNumber ( PGM_P s, int number );
 
   // private:
 };

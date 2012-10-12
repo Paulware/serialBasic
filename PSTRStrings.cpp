@@ -18,7 +18,7 @@ void PSTRStrings::addString ( const prog_char * s )
   str->index = 0;
 }
 
- PSTRStrings::PSTRStrings(int numberOfStrings )
+ PSTRStrings::PSTRStrings(int numberOfStrings ):debugUtils()
 {
   numStrings = 0;
   strings = (CommandStringType *)calloc (numberOfStrings, sizeof (CommandStringType)); 
@@ -48,13 +48,25 @@ void PSTRStrings::clearCommands () // Called on setup
   }
 }
 
+void PSTRStrings::show ( int startValue, int stopValue ) 
+{
+  
+  for (int i=startValue; i<stopValue; i++)
+  {
+    Serial.print ( i );
+    debugUtils.printPSTR ( PSTR ( ")" ) );
+    printString(i);
+    debugUtils.printPSTR ( PSTR ( "\n" ) );
+  }
+}
+
 void PSTRStrings::printString ( int which )
 {
   CommandStringType * str = strings + (sizeof (CommandStringType) * which);
   printPSTR ( str->ptr );
 }
 
-int PSTRStrings::matchCommand ( char ch ) 
+int PSTRStrings::matchCommand ( char ch, boolean doDebug ) 
 {
   int matched = -1;
   char c;  
@@ -67,16 +79,25 @@ int PSTRStrings::matchCommand ( char ch )
 
     if (ch == c)
     {
-      //Serial.print ( ch );
-      //printPSTR ( PSTR  ( " == " ));
-      //Serial.println ( c );
+      if (doDebug && (i==0))
+      {
+        Serial.print ( ch );
+        printPSTR ( PSTR  ( " == " ));
+        Serial.println ( c );
+      }  
       str->index++;
     }  
     else
     {
-      //Serial.print ( ch );
-      //printPSTR ( PSTR  ( " != ") );
-      //Serial.println (c);
+      if (doDebug && (i==0))
+      {
+        Serial.print ( ch );
+        printPSTR ( PSTR  ( " != ") );
+        if ((int)c < 33) 
+          Serial.println ( (int) c );
+        else          
+          Serial.println (c);
+      }  
       str->index = 0;
     }  
 
@@ -85,6 +106,11 @@ int PSTRStrings::matchCommand ( char ch )
       matched = i;
       // Clear index for next command
       str->index = 0; 
+      if (doDebug)
+      {
+        printPSTR ( PSTR  ( "Got a match on") );
+        Serial.println ( i );
+      }
       break;
     }
   }
