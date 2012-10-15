@@ -1,6 +1,6 @@
 #include "ArduinoBASIC.h"
 #define NUMBER_OF_COMMANDS 5
-#define NUMBER_OF_STATEMENTS 12
+#define NUMBER_OF_STATEMENTS 13
   
 ArduinoBASIC::ArduinoBASIC(): 
   commands(NUMBER_OF_COMMANDS), 
@@ -29,6 +29,7 @@ ArduinoBASIC::ArduinoBASIC():
   statements.addString ( PSTR ( "set"));        //  9 
   statements.addString ( PSTR ( "callback"));   // 10
   statements.addString ( PSTR ( "thermistor")); // 11
+  statements.addString ( PSTR ( "startTimer")); // 12
 }
 
 void ArduinoBASIC::setCallback (VoidType _callback)

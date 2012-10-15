@@ -2,33 +2,7 @@
 #include <Wire.h>
 #include "ScriptEEPROM.h"
 
-#define BLOCK_SIZE 128
-
-/*
-prog_char  cmd0[] PROGMEM = "end";
-prog_char  cmd1[] PROGMEM = "wait";
-prog_char  cmd2[] PROGMEM = "setFail";
-prog_char  cmd3[] PROGMEM = "setMin";
-prog_char  cmd4[] PROGMEM = "setMax";
-prog_char  cmd5[] PROGMEM = "setTest";
-prog_char  cmd6[] PROGMEM = "setCase";
-prog_char  cmd7[] PROGMEM = "relay";
-prog_char  cmd8[] PROGMEM = "debug";
-prog_char  cmd9[] PROGMEM = "sendCmd";
-prog_char cmd10[] PROGMEM = "waitFor";
-prog_char cmd11[] PROGMEM = "setName";
-prog_char cmd12[] PROGMEM = "if";
-prog_char cmd13[] PROGMEM = "jump";
-prog_char cmd14[] PROGMEM = "endif";
-prog_char cmd15[] PROGMEM = "lcd";
-prog_char cmd16[] PROGMEM = "dump";
-prog_char cmd17[] PROGMEM = "wire";
-prog_char cmd18[] PROGMEM = "set";
-prog_char cmd19[] PROGMEM = "startTimer";
-prog_char cmd20[] PROGMEM = "processWire";
-*/
-                                              
-ScriptEEPROM::ScriptEEPROM(PSTRStrings * _statements)
+ScriptEEPROM::ScriptEEPROM(PSTRStrings * _statements):components()
 { 
   statements = _statements;
   callback = 0;
@@ -54,8 +28,8 @@ void ScriptEEPROM::reset()
   {
     if (headEEPROM)
     {
-      debugUtils.printPSTR ( PSTR ( "headEEPROM initialized to: " ) );
-      Serial.println ( headEEPROM );
+      //debugUtils.printPSTR ( PSTR ( "headEEPROM initialized to: " ) );
+      //Serial.println ( headEEPROM );
     }  
   }
   
@@ -179,57 +153,6 @@ boolean ScriptEEPROM::addCh ( char ch, boolean incrementHead )
   } 
 }
 
-/* 
-  Parameter will be in this format: 
-    nnparameter 
-  where nn is some number 00..99 and 
-  parameter is the rest of the command
-  
-  There is no "smart" processing of the command to optimize eeprom
-*/
-boolean ScriptEEPROM::addStep ( uint8_t command, char * parameter )
-{
-  boolean ok = false;
-  int len = strlen ( parameter );
-  int head = headEEPROM;
-  char ch;
-  
-  if (headEEPROM < MAX_EEPROM_BUFFER-1)
-  {
-    EEPROM.write (headEEPROM++, command); 
-    while (*parameter != ' ')
-    {
-      if (headEEPROM == MAX_EEPROM_BUFFER-1)
-        break;
-      else
-      {
-        parameter = getCh ( parameter, &ch );
-        EEPROM.write (headEEPROM++, ch );
-      }  
-    }
-    // if have already filled the buffer, back out the change
-    if (headEEPROM == MAX_EEPROM_BUFFER-1)
-    {
-      headEEPROM = head; // Restore to old value
-      EEPROM.write (headEEPROM, 0); // Restore end of test
-    }  
-    else // We have enough room for test Termination
-    {
-      EEPROM.write ( headEEPROM++, 0); // Command termination
-      EEPROM.write ( headEEPROM, 0); // Test termination  
-      ok = true;
-    }
-  }
-
-  if (debugUtils.debugging() && ok)
-  {  
-    debugUtils.printPSTR ( PSTR ( "Command" ) );
-    Serial.print ( command );
-    debugUtils.printPSTR ( PSTR ( " added headEEPROM:" ) );
-    Serial.println ( headEEPROM );
-  }
-  return ok;  
-}
 
 int ScriptEEPROM::showDecimal (int index)
 {
@@ -321,7 +244,7 @@ void ScriptEEPROM::showSteps ()
   if (debugUtils.debugging())
   {
     if (!value) 
-      debugUtils.printPSTR ( PSTR ( "Program is empty" ) );
+      debugUtils.printPSTR ( PSTR ( "Program is empty\n" ) );
     else
       // value at this point represents the next command
       while (value)
@@ -351,8 +274,6 @@ void ScriptEEPROM::showSteps ()
         value = EEPROM.read (index); // value is now next command or 0 to terminate        
       }
       
-    if (!step)
-      debugUtils.printPSTR ( PSTR("Program is empty\r\n") );
   }  
 }
 
@@ -434,16 +355,30 @@ int ScriptEEPROM::readDecimal (int * testPointer)
 {
   int value = 0;
   int total = 0;
+  boolean debugThis = false;
   while (true)
   {
     value = EEPROM.read (*testPointer);
+    // Exit if number if not a decimal
+    if ((value < '0') || (value > '9'))
+      break;
     if (!value)
       break;
     else
     {
       *testPointer += 1;
+      if (debugThis)
+      {
+        debugUtils.printPSTR ( PSTR ( "old value: " ) );
+        Serial.println ( total );
+      }        
       total *= 10;
       total += value - '0';
+      if (debugThis)
+      {
+        debugUtils.printPSTR ( PSTR ( "new value: " ) );
+        Serial.println ( total );
+      }        
     }    
   }
     
@@ -453,6 +388,9 @@ int ScriptEEPROM::readDecimal (int * testPointer)
 void ScriptEEPROM::executeStep(int * step)
 {
   static unsigned long waitTimeout = 0;
+  static unsigned long startTime = 0;
+  static unsigned long startTimer = 0;
+
   uint8_t value;
   uint8_t op;
   boolean done = true;
@@ -462,9 +400,23 @@ void ScriptEEPROM::executeStep(int * step)
   int index;
   int jumpOffset;
   unsigned long elapsedTime;
+  static int totalTime;
+  int compareValue;
 
   if (!testIndex) 
     startTime = millis();
+ 
+  if (startTimer) // We are counting down
+  {
+    elapsedTime = (millis() - startTimer) / 1000;
+    if ( elapsedTime > totalTime )
+    {
+      T = 0;
+      startTimer = 0;
+    }
+    else
+      T = totalTime - elapsedTime;
+  }  
   
   switch (currentCommand)
   {
@@ -499,12 +451,27 @@ void ScriptEEPROM::executeStep(int * step)
       }      
     break;
     
-    case 2: // Set relay n = relay number, n=(1:on, 0:off)
-      testIndex++; // Skip the relay number
-      testIndex++; // Skip the oneOff
+    case 2: // Statement = relaynnon or relaynnoff
+      index = readDecimal (&testIndex);
+      if ((EEPROM.read (testIndex) == 'o') && (EEPROM.read(testIndex+1) == 'n')) 
+      {
+        debugUtils.printPSTR ( PSTR ( "Relay " ) );
+        Serial.print ( index );
+        debugUtils.printPSTR ( PSTR ( " turned on\n" ) );
+        digitalWrite ( index, 1);
+        testIndex = testIndex + 2; // on 
+      }  
+      else
+      {
+        debugUtils.printPSTR ( PSTR ( "Relay " ) );
+        Serial.print ( index );
+        debugUtils.printPSTR ( PSTR ( " turned off\n" ) );
+        digitalWrite (index, 0);
+        testIndex = testIndex + 3; // off
+      }  
       testIndex++; // Skip the command terminator
+      
       // TODO energize the relay
-      debugUtils.printPSTR ( PSTR ( "Set relay X on/off\n" ) );
       break;
      
     case 3: // Echo output text to serial monitor 
@@ -530,6 +497,9 @@ void ScriptEEPROM::executeStep(int * step)
         case 'A':
           var = &A;
           break;
+        case 'T':
+          var = &T;
+          break;
         case 'E':
           // Compute elapsed time
           elapsedTime = (millis() - startTime) / 1000;
@@ -545,16 +515,62 @@ void ScriptEEPROM::executeStep(int * step)
           Serial.println ( (int)varName );
           break;
       }
-      if (var)
+      if (EEPROM.read ( testIndex) == '<') // Evaluate a less than
+      {
+        testIndex++; // Consume the '<'
+        compareValue = readDecimal (&testIndex);
+        testIndex++;
+        debugUtils.printPSTR ( PSTR ( "Check if var <" ) );
+        Serial.println ( compareValue );
+        if (*var < compareValue) // If Statement evaluates true
+        {
+        }
+        else
+        {
+          // debugUtils.printPSTR ( PSTR ( "If statement evaluates false\n" ) );
+          if (skipTo (4, testIndex ) )
+            testIndex = skipTo (4, testIndex );
+          else
+          {
+            debugUtils.printPSTR ( PSTR ( "Error...could not find an endif after " ) );
+            Serial.println ( testIndex );  
+          }  
+        }
+      }
+      else if (EEPROM.read (testIndex) == '>') // Evaluate a greater than
+      {
+        testIndex++; // Consume the '>'
+        compareValue = readDecimal (&testIndex);
+        testIndex++;
+        debugUtils.printPSTR ( PSTR ( "Check if var >" ) );
+        Serial.println ( compareValue );
+        if (*var > compareValue) // If Statement evaluates true
+        {
+        }
+        else
+        {
+          // debugUtils.printPSTR ( PSTR ( "If statement evaluates false\n" ) );
+          if (skipTo (4, testIndex ) )
+            testIndex = skipTo (4, testIndex );
+          else
+          {
+            debugUtils.printPSTR ( PSTR ( "Error...could not find an endif after " ) );
+            Serial.println ( testIndex );  
+          }  
+        }
+      }
+      else if (var)
       {
         testIndex++; // Skip null terminator of if statement 
         if (*var) // If statement evaluates true
-          debugUtils.printPSTR ( PSTR ( "If statement evaluated true\n" ) );
+        {
+          // debugUtils.printPSTR ( PSTR ( "If statement evaluated true\n" ) );
+        }  
         else
         {
-          debugUtils.printPSTR ( PSTR ( "If statement evaluates false\n" ) );
-          if (skipTo (14, testIndex ) )
-            testIndex = skipTo (14, testIndex );
+          // debugUtils.printPSTR ( PSTR ( "If statement evaluates false\n" ) );
+          if (skipTo (4, testIndex ) )
+            testIndex = skipTo (4, testIndex );
           else
           {
             debugUtils.printPSTR ( PSTR ( "Error...could not find an endif after " ) );
@@ -592,15 +608,15 @@ void ScriptEEPROM::executeStep(int * step)
       newStep = *step + jumpOffset;
       done = false; // New step will not be completed until later
 
-      debugUtils.printPSTR ( PSTR ("Jumping from CurrentStep: " ));
-      Serial.print (*step);
-      debugUtils.printPSTR ( PSTR ( " to Next Step: " ));
-      Serial.print ( newStep); 
+      //debugUtils.printPSTR ( PSTR ("Jumping from CurrentStep: " ));
+      //Serial.print (*step);
+      //debugUtils.printPSTR ( PSTR ( " to Next Step: " ));
+      //Serial.print ( newStep); 
       testIndex = findStep ( newStep);
       currentCommand = EEPROM.read ( testIndex );
-      debugUtils.printPSTR ( PSTR ( " " ) );
-      statements->printString (currentCommand);
-      debugUtils.printPSTR ( PSTR ( "\n" ) );
+      //debugUtils.printPSTR ( PSTR ( " " ) );
+      //statements->printString (currentCommand);
+      //debugUtils.printPSTR ( PSTR ( "\n" ) );
       *step = newStep;
       break;
             
@@ -664,23 +680,28 @@ void ScriptEEPROM::executeStep(int * step)
     case 10: // callback (for those wanting to do a c call)
       if (callback)
         callback();
+      testIndex++; // Consume the terminating 0
       break;
 
     case 11: // thermistor, set value in A
-      break;    
+      // Get the Analog Input number 
+      A = (int) components.thermistorFahrenheit (readDecimal (&testIndex));
+      testIndex++; // Consume the terminating 0
+      break;      
 
-    /*       
-    case 19: // startTimer
-      startTime = millis();
+    case 12: // startTimer
+      startTimer = millis();
       totalTime = readDecimal ( &testIndex ); 
-      testIndex++; // Consume the terminating 0    
       if (debugUtils.debugging())
       {
         debugUtils.printPSTR ( PSTR("Got a totaltime of : " ));
         Serial.println ( totalTime );
-      }  
+      }
+      T = totalTime;
+      testIndex++; // Consume the terminating 0    
       break;  
       
+    /*       
     // Read from slave 2, and write to external eeprom
     case 20: // processWire
       processWire();

@@ -5,6 +5,7 @@
 #include <I2C_eeprom.h>
 #include "DebugUtilities.h"
 #include "PSTRStrings.h"
+#include "Components.h"
 
 #define MAX_EEPROM_BUFFER 1024
 
@@ -18,7 +19,6 @@ class ScriptEEPROM
     void showSteps ();
     int findStep ( int step ); 
     boolean addCh (char ch, boolean incrementHead);
-    boolean addStep (uint8_t command, char * parameter);
     int numSteps (); 
     void reset(); // Stop test
     void continueTest();
@@ -49,15 +49,14 @@ class ScriptEEPROM
 
     int A;
     int E;
-    int totalTime;
+    int T;
     int currentStep;
     void processWire ();
     // The eeprom should be able to save 128K of bytes, but only 2 bytes of address? = 64K?
     unsigned long eepromTail;
     unsigned long eepromHead;
-    unsigned long startTime;
     PSTRStrings * statements;
-
+    Components components;
 };
 #endif
 
