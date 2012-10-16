@@ -224,11 +224,6 @@ int ScriptEEPROM::findStep ( int stepNum )
     
   if (stepCount != stepNum)
   {
-    if (debugUtils.debugging())
-    {
-      debugUtils.printPSTR ( PSTR ( "Could not find step: " ) );
-      Serial.println ( stepNum );;
-    }
     index = 0;
   }  
     
@@ -756,20 +751,20 @@ void ScriptEEPROM::del(int stepNumber)
   if (stepNumber)
   {
     i = findStep (stepNumber);
-    offset = findStep ( stepNumber + 1) - i;
-    Serial.print ( "Offset: " );
-    Serial.println ( offset );
-    if (offset > 0) // TODO: delete the last step
+    offset = findStep ( stepNumber + 1);
+    if (!offset)
+    { // No second step
+      EEPROM.write (i++,0);
+      EEPROM.write (i,0);
+    }
+    else
     {
+      offset = offset - i;
       // Point to the subsequent step
       index = findStep ( stepNumber ) + offset;
       while (value || EEPROM.read(index))
       {
         value = EEPROM.read (index);
-        Serial.print ( "value: " );
-        Serial.print ( value );
-        Serial.print ( " index: " );
-        Serial.println ( index++ );
         EEPROM.write (i++, value);
       }        
       EEPROM.write ( i, 0); // Write terminating 0

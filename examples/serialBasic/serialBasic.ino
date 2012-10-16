@@ -21,6 +21,8 @@ void setup()
   Serial.println ( freeMemory () );
   arduinoBASIC.init();
   arduinoBASIC.setCallback(callback);
+  if (arduinoBASIC.eepromProgram.numSteps() > 0) 
+    arduinoBASIC.eepromProgram.run();
 }
 
 void loop()
