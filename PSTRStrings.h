@@ -6,29 +6,31 @@
 
 struct CommandStringType
 {
-  int index;
-  int len;
+  uint8_t index;
+  // uint8_t len;
   prog_char * ptr;
-  // Note: Removing the next line causes word and bizarre behavior
-  uint8_t pad; // To stay on word boundary?
+  // char * ptr;
+  // PGM_P ptr;
 };
 
 class PSTRStrings
 {
   public:          
     // Constructor
-    PSTRStrings(int numberOfStrings);
+    PSTRStrings(int _numberOfStrings);
     int matchCommand ( char ch, boolean doDebug); 
     void printString ( int which );
     void clearCommands ();
     void addString (const prog_char * s);
     void show ( int startValue, int stopValue ); 
+    int matchCharPointer ( char * ch ); 
     
   private:  
     void printPSTR ( PGM_P s); 
     int progLen (PGM_P ptr);
 
     int numStrings;
+    int numberOfStrings;
     CommandStringType * strings;
     DebugUtilities debugUtils;
 };

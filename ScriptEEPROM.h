@@ -34,7 +34,11 @@ class ScriptEEPROM
     int testState; // 0 = Idle, 1 = In Progress, 2 = Successfully completed, 3 = Test Failure Detected 
     void run(); // Start the program
     VoidType callback;
-    
+    void del(int stepNumber); // Delete a step
+    // void change(int stepNumber, char c); // Change a step
+    int readDec (char * ch);
+    // void insertCh ( int index, char ch );
+
   private:
     int headEEPROM; // EEPROM index
     int testIndex;

@@ -11,16 +11,17 @@ class ArduinoBASIC
 public:          
   //typedef void (*VoidType)();  
   ArduinoBASIC();
-  PSTRStrings commands;   // BASIC commands
-  PSTRStrings statements; // BASIC Statements
-  ScriptEEPROM eepromProgram; 
   void init ();   
   void handleChar ( char ch );
   void setCallback (VoidType _callback);
   
+  PSTRStrings commands;   // BASIC commands
+  PSTRStrings statements; // BASIC Statements
+  ScriptEEPROM eepromProgram; 
+  DebugUtilities debugUtils;
+  
 private:
   void continueStatement ( char ch );
-  DebugUtilities debugUtils;
   int lastStatement;
 
 };

@@ -1,6 +1,7 @@
 #include "ArduinoBASIC.h"
-#define NUMBER_OF_COMMANDS 5
+#define NUMBER_OF_COMMANDS 6
 #define NUMBER_OF_STATEMENTS 13
+
   
 ArduinoBASIC::ArduinoBASIC(): 
   commands(NUMBER_OF_COMMANDS), 
@@ -16,6 +17,7 @@ ArduinoBASIC::ArduinoBASIC():
   commands.addString ( PSTR ( "clear" ));       //  2
   commands.addString ( PSTR ( "dump" ));        //  3
   commands.addString ( PSTR ( "run" ));         //  4
+  commands.addString ( PSTR ( "del"));          //  5
   
   statements.addString ( PSTR ( "endtest" ));   //  0
   statements.addString ( PSTR ( "wait" ));      //  1
@@ -58,7 +60,12 @@ void ArduinoBASIC::handleChar ( char ch )
 {
   int gotStatement = statements.matchCommand (ch, false);
   int gotCommand = commands.matchCommand (ch, false);
-    
+  char c;
+  int value;
+  
+  //statements.show(0,12);
+  //commands.show(0,4);
+      
   if (lastStatement > -1)
   { // Save uninterpretted parameters to EEPROM
     continueStatement (ch); 
@@ -74,13 +81,13 @@ void ArduinoBASIC::handleChar ( char ch )
   {
     if (gotCommand > -1)
       debugUtils.printPSTR ( PSTR ( "\n" ) );
-    
+      
     switch (gotCommand)
     {
       case 0:
-        debugUtils.printPSTR ( PSTR ( "Recognized commands: \n" ));
+        debugUtils.printPSTR ( PSTR ( "Commands: \n" ));
         commands.show(1,NUMBER_OF_COMMANDS);
-        debugUtils.printPSTR ( PSTR ( "Recognized BASIC-like statements: \n" ));
+        debugUtils.printPSTR ( PSTR ( "BASIC-like statements: \n" ));
         statements.show(1,NUMBER_OF_STATEMENTS);
         break;
       case 1:
@@ -94,7 +101,17 @@ void ArduinoBASIC::handleChar ( char ch )
         break;
       case 4: 
         eepromProgram.run();
-        break;      
+        break;    
+      case 5: 
+        value = eepromProgram.readDec ( &c);
+        eepromProgram.del(value);
+        break;
+      /*
+      case 6: 
+        value = eepromProgram.readDec ( &c);
+        eepromProgram.change(value, c);
+        break;        
+      */  
       default:
         break;
     }

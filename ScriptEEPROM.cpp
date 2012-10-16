@@ -349,6 +349,34 @@ char * ScriptEEPROM::readHexFromChar (char * hex, int * total)
 
   return hex;
 }
+
+
+// Do not consume the terminating 0
+int ScriptEEPROM::readDec (char * ch)
+{
+  int value = 0;
+  int total = 0;
+  boolean debugThis = false;
+  while (true)
+  {
+    *ch = Serial.read();
+    value = *ch;
+    // Exit if number if not a decimal
+    if ((value < '0') || (value > '9'))
+      break;
+    if (!value)
+      break;
+    else
+    {
+      total *= 10;
+      total += value - '0';
+    }    
+  }
+    
+  return total;
+}
+
+
     
 // Do not consume the terminating 0
 int ScriptEEPROM::readDecimal (int * testPointer)
@@ -718,6 +746,94 @@ void ScriptEEPROM::executeStep(int * step)
   
 }
 
+void ScriptEEPROM::del(int stepNumber)
+{
+  int index;
+  int offset;
+  int i;
+  int value = 0;
+  
+  if (stepNumber)
+  {
+    i = findStep (stepNumber);
+    offset = findStep ( stepNumber + 1) - i;
+    Serial.print ( "Offset: " );
+    Serial.println ( offset );
+    if (offset > 0) // TODO: delete the last step
+    {
+      // Point to the subsequent step
+      index = findStep ( stepNumber ) + offset;
+      while (value || EEPROM.read(index))
+      {
+        value = EEPROM.read (index);
+        Serial.print ( "value: " );
+        Serial.print ( value );
+        Serial.print ( " index: " );
+        Serial.println ( index++ );
+        EEPROM.write (i++, value);
+      }        
+      EEPROM.write ( i, 0); // Write terminating 0
+    }  
+  }  
+}
+
+/*
+void ScriptEEPROM::insertCh ( int index, char ch ) 
+{
+  char temp = ch;
+  int i = index;
+  
+  while (temp || EEPROM.read(index))
+  {
+    temp = EEPROM.read (index);
+    EEPROM.write (index++, ch);
+    ch = temp;
+  } 
+  EEPROM.write (index,0); // Terminate the program
+  
+}
+
+void ScriptEEPROM::change(int stepNumber, char ch)
+{
+  int index;
+  int offset;
+  int i;
+  int value = 0;
+  int startIndex;
+  
+  if (stepNumber)
+  { // Delete the step
+    i = findStep (stepNumber);
+    startIndex = i;
+    offset = findStep ( stepNumber + 1) - i;
+    Serial.print ( "Offset: " );
+    Serial.println ( offset );
+    if (offset > 0) // TODO: delete the last step
+    {
+      // Point to the subsequent step
+      index = findStep ( stepNumber ) + offset;
+      while (value || EEPROM.read(index))
+      {
+        value = EEPROM.read (index);
+        Serial.print ( "value: " );
+        Serial.print ( value );
+        Serial.print ( " index: " );
+        Serial.println ( index++ );
+        EEPROM.write (i++, value);
+      }        
+      EEPROM.write ( i, 0); // Write terminating 0
+    }  
+    
+    while (ch != 13)
+    {
+      insertCh ( startIndex++, ch );
+      ch = Serial.read();
+    }
+    insertCh ( startIndex, 0); // Terminate the step
+    Serial.println ( "All done inserting" );
+  }  
+}
+*/
 const prog_char * ScriptEEPROM::testStatus ()
 {
   const prog_char * progmem;
