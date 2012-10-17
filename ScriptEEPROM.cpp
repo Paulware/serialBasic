@@ -16,9 +16,9 @@ void ScriptEEPROM::reset()
   headEEPROM = 0;
   
   value = EEPROM.read ( headEEPROM );
-  while (value) // Read all steps
+  while (value && (headEEPROM < 1024)) // Read all steps
   {
-    while (value = EEPROM.read ( headEEPROM++) ) // Read one step
+    while ((headEEPROM < 1024) && (value = EEPROM.read ( headEEPROM++))) // Read one step
     { 
     }  
     value = EEPROM.read ( headEEPROM);  
@@ -28,10 +28,16 @@ void ScriptEEPROM::reset()
   {
     if (headEEPROM)
     {
-      //debugUtils.printPSTR ( PSTR ( "headEEPROM initialized to: " ) );
-      //Serial.println ( headEEPROM );
+      debugUtils.printPSTR ( PSTR ( "headEEPROM initialized to: " ) );
+      Serial.println ( headEEPROM );
     }  
   }
+  
+  if (headEEPROM == 1024)
+  {
+    debugUtils.printPSTR ( PSTR ( "\nEEPROM corruption detected...clearing\n" ) );
+    EEPROM.write (0,0);
+  }  
   
   testIndex = 0;
   testState = 0;
@@ -245,7 +251,11 @@ void ScriptEEPROM::showSteps ()
       while (value)
       {
         if (!step) // This is the first one
+        {
+          debugUtils.printPSTR ( PSTR ( "HeadEEPROM: " ) );
+          Serial.print ( headEEPROM );
           debugUtils.printPSTR ( PSTR ( "\nScript Steps: \n" ) );
+        }  
         step++;
         
         Serial.print ( step );
@@ -371,8 +381,6 @@ int ScriptEEPROM::readDec (char * ch)
   return total;
 }
 
-
-    
 // Do not consume the terminating 0
 int ScriptEEPROM::readDecimal (int * testPointer)
 {
@@ -451,10 +459,7 @@ void ScriptEEPROM::executeStep(int * step)
       if (waitTimeout)
       {
         if (millis() > waitTimeout) 
-        {
           waitTimeout = 0;
-          debugUtils.printPSTR ( PSTR ( "Wait is complete\n" ) );
-        }
         else
           done = false;  
       }
@@ -466,7 +471,7 @@ void ScriptEEPROM::executeStep(int * step)
         {
           debugUtils.printPSTR ( PSTR ( "Wait for " ) );
           Serial.print ( waitTimeout );
-          debugUtils.printPSTR ( PSTR ( " seconds\n" ) );
+          debugUtils.printPSTR ( PSTR ( " second(s)\n" ) );
         }
         waitTimeout *= 1000; // Convert to milliseconds        
         waitTimeout += millis(); // Offset from current time       
@@ -523,16 +528,6 @@ void ScriptEEPROM::executeStep(int * step)
         case 'T':
           var = &T;
           break;
-        case 'E':
-          // Compute elapsed time
-          elapsedTime = (millis() - startTime) / 1000;
-          E = totalTime - elapsedTime;
-          if (E < 0)
-            E = 0;
-          var = &E;
-          debugUtils.printPSTR ( PSTR ( "E=" ));
-          Serial.println ( E);
-          break;  
         default:
           debugUtils.printPSTR ( PSTR ( "***ERROR*** Variable not recognized: " ));
           Serial.println ( (int)varName );
@@ -700,9 +695,9 @@ void ScriptEEPROM::executeStep(int * step)
       debugUtils.printPSTR ( PSTR ( "Set command complete\n" ) );
       break;
       
-    case 10: // callback (for those wanting to do a c call)
+    case 10: // callback (for those wanting to do a c call)      
       if (callback)
-        callback();
+        callback(readDecimal(&testIndex));
       testIndex++; // Consume the terminating 0
       break;
 
@@ -747,28 +742,24 @@ void ScriptEEPROM::del(int stepNumber)
   int offset;
   int i;
   int value = 0;
-  
+
   if (stepNumber)
   {
     i = findStep (stepNumber);
     offset = findStep ( stepNumber + 1);
-    if (!offset)
-    { // No second step
-      EEPROM.write (i++,0);
+    if (!offset) // No second step
       EEPROM.write (i,0);
-    }
     else
     {
       offset = offset - i;
       // Point to the subsequent step
       index = findStep ( stepNumber ) + offset;
       while (value || EEPROM.read(index))
-      {
-        value = EEPROM.read (index);
-        EEPROM.write (i++, value);
-      }        
+        EEPROM.write (i++, EEPROM.read (index++));        
+        
       EEPROM.write ( i, 0); // Write terminating 0
     }  
+    headEEPROM = i; 
   }  
 }
 

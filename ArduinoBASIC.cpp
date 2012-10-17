@@ -34,11 +34,6 @@ ArduinoBASIC::ArduinoBASIC():
   statements.addString ( PSTR ( "startTimer")); // 12
 }
 
-void ArduinoBASIC::setCallback (VoidType _callback)
-{
-  eepromProgram.callback = _callback;
-}
-
 void ArduinoBASIC::init ()
 {
   // callback = _callback;
@@ -74,14 +69,18 @@ void ArduinoBASIC::handleChar ( char ch )
   }
   else if (gotStatement > -1)
   { 
+    // statements.printString ( gotStatement );
     eepromProgram.addCh (gotStatement, true);
     lastStatement = gotStatement;
   }
   else // Check for command
   {
-    if (gotCommand > -1)
-      debugUtils.printPSTR ( PSTR ( "\n" ) );
       
+    if (gotCommand > -1) 
+    {    
+      commands.printString ( gotCommand ); 
+      debugUtils.printPSTR ( PSTR ( "\n" ) );
+    }
     switch (gotCommand)
     {
       case 0:

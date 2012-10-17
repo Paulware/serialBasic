@@ -8,12 +8,11 @@
 
 class ArduinoBASIC
 {
-public:          
+public:     
   //typedef void (*VoidType)();  
   ArduinoBASIC();
   void init ();   
   void handleChar ( char ch );
-  void setCallback (VoidType _callback);
   
   PSTRStrings commands;   // BASIC commands
   PSTRStrings statements; // BASIC Statements

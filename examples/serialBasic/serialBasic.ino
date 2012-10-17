@@ -7,7 +7,7 @@
 ArduinoBASIC arduinoBASIC = ArduinoBASIC ();
 DebugUtilities debugUtils;
 
-void callback ()
+void callback (int value)
 {
   Serial.println ( "From callback" );
 }
@@ -20,7 +20,7 @@ void setup()
   debugUtils.printPSTR ( PSTR ( "free RAM: " ) );
   Serial.println ( freeMemory () );
   arduinoBASIC.init();
-  arduinoBASIC.setCallback(callback);
+  arduinoBASIC.eepromProgram.callback = callback;
   if (arduinoBASIC.eepromProgram.numSteps() > 0) 
     arduinoBASIC.eepromProgram.run();
 }

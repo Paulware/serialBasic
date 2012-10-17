@@ -9,7 +9,9 @@
 
 #define MAX_EEPROM_BUFFER 1024
 
-typedef void (*VoidType)();
+typedef void (*VoidCallbackType)();
+typedef void (*IntCallbackType)(int value);      
+
 
 class ScriptEEPROM
 {
@@ -33,7 +35,7 @@ class ScriptEEPROM
     void dump();
     int testState; // 0 = Idle, 1 = In Progress, 2 = Successfully completed, 3 = Test Failure Detected 
     void run(); // Start the program
-    VoidType callback;
+    IntCallbackType callback;
     void del(int stepNumber); // Delete a step
     // void change(int stepNumber, char c); // Change a step
     int readDec (char * ch);

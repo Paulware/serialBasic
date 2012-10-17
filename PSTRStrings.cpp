@@ -14,19 +14,10 @@ void PSTRStrings::addString ( const prog_char * s )
   CommandStringType * str;
   if (numStrings == 0) // This is the first one
   {
-    //debugUtils.printPSTR ( PSTR ( "sizeof CommandStringType: " ) );
-    //Serial.print ( sizeof (CommandStringType ) );
-    //debugUtils.printPSTR ( PSTR ( " initial malloc: " ) );
     strings = (CommandStringType *) malloc ( sizeof (CommandStringType) * numberOfStrings);
-    //Serial.print ( (unsigned long ) strings );
-    //debugUtils.printPSTR ( PSTR ( "After malloc: " ) );
-    //CommandStringType * q = (CommandStringType *) malloc (3);
-    //Serial.println ( (unsigned long) q );  
   }
   
   str = &strings [numStrings++];  
-  //debugUtils.printPSTR ( PSTR ( "Address of str: " ) );
-  //Serial.println ( (unsigned long ) str );
   
   str->ptr = (prog_char *)s;
   // str->len = progLen (str->ptr);
@@ -80,8 +71,11 @@ void PSTRStrings::show ( int startValue, int stopValue )
 
 void PSTRStrings::printString ( int which )
 {
-  CommandStringType * str = &strings [which];  
-  printPSTR ( str->ptr );
+  if ((which < numStrings) && (which >= 0))
+  {
+    CommandStringType * str = &strings [which];  
+    printPSTR ( str->ptr );
+  }  
 }
 
 int PSTRStrings::matchCharPointer ( char * ch ) 
