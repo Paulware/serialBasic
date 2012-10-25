@@ -6,11 +6,10 @@
 
 struct CommandStringType
 {
-  uint8_t index;
-  // uint8_t len;
+  int index;
+  int len;
   prog_char * ptr;
-  // char * ptr;
-  // PGM_P ptr;
+  int matched;
 };
 
 class PSTRStrings
@@ -18,22 +17,25 @@ class PSTRStrings
   public:          
     // Constructor
     PSTRStrings(int _numberOfStrings);
-    int matchCommand ( char ch, boolean doDebug); 
+    int matchString ( char ch, boolean doDebug); 
     void printString ( int which );
-    void clearCommands ();
     void addString (const prog_char * s);
     void show ( int startValue, int stopValue ); 
+    void showAll ();
     int matchCharPointer ( char * ch ); 
+    int numberOfStrings;
+    char charAt ( int i, int j);
+    void showMatches();
+    void clearMatches();
+    void clearIndexes();
+    int stringLen( int which);
+    int intersect ( PSTRStrings * targetList, int index );  
+    boolean checkMatch (int which);
+	
+    int numStrings;
     
   private:  
-    void printPSTR ( PGM_P s); 
-    int progLen (PGM_P ptr);
-
-    int numStrings;
-    int numberOfStrings;
     CommandStringType * strings;
     DebugUtilities debugUtils;
 };
 #endif
-
-

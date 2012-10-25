@@ -10,19 +10,19 @@ class ArduinoBASIC
 {
 public:     
   //typedef void (*VoidType)();  
-  ArduinoBASIC();
-  void init ();   
-  void handleChar ( char ch );
+  ArduinoBASIC();   
+  void handleChar ( PSTRStrings & cannedProgram, char ch );
   
   PSTRStrings commands;   // BASIC commands
   PSTRStrings statements; // BASIC Statements
   ScriptEEPROM eepromProgram; 
   DebugUtilities debugUtils;
+  void loadProgram (PSTRStrings &cannedProgram );
+  void init();
   
 private:
   void continueStatement ( char ch );
   int lastStatement;
-
 };
 #endif
 

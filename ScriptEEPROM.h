@@ -17,29 +17,29 @@ class ScriptEEPROM
 {
   public:          
     // Constructor
-    ScriptEEPROM(PSTRStrings * _statements);
+    ScriptEEPROM(PSTRStrings * _statements, PSTRStrings * _commands);
     void showSteps ();
     int findStep ( int step ); 
     boolean addCh (char ch, boolean incrementHead);
     int numSteps (); 
     void reset(); // Stop test
     void continueTest();
-    void executeStep (int * step);
+    void executeStep (boolean &stepDone);
     void clear();  // Clear out the script
     
     const prog_char * testStatus ();
     char * getCh ( char * parameter, char * ch );
     char * readHexFromChar (char * hex, int * total);
     char lcase ( char ch );
-    void init();
     void dump();
     int testState; // 0 = Idle, 1 = In Progress, 2 = Successfully completed, 3 = Test Failure Detected 
     void run(); // Start the program
     IntCallbackType callback;
-    void del(int stepNumber); // Delete a step
+    void removeLine(int stepNumber); // Delete a step
     // void change(int stepNumber, char c); // Change a step
     int readDec (char * ch);
-    // void insertCh ( int index, char ch );
+	boolean eepromMatch ( char ch, int which );
+	int findLabel ( int index );
 
   private:
     int headEEPROM; // EEPROM index
@@ -48,21 +48,26 @@ class ScriptEEPROM
     int currentCommand; // Current Test Command
     DebugUtilities debugUtils;    
     // PROGMEM const char * decodeCommand (uint8_t command );
-    int showDecimal (int index);
-    int readDecimal (int * testPointer);
-    int skipTo (uint8_t cmd, int index );  // Return an EEPROM pointer to the specified command
+    // int showDecimal (int index);
+    int readDecimal (int &testPointer);
+    // Return an EEPROM pointer, that points to the next command=cmd
+    void skipToNext (uint8_t cmd); 
     int indexToStep (int indexValue);
+    uint8_t readEEPROM ( int index );
 
-    int A;
-    int E;
     int T;
-    int currentStep;
+    int E;
+    int A;
+    int M;
     void processWire ();
     // The eeprom should be able to save 128K of bytes, but only 2 bytes of address? = 64K?
     unsigned long eepromTail;
     unsigned long eepromHead;
     PSTRStrings * statements;
+    PSTRStrings * commands;
     Components components;
+    void showStatus();
+    int dumpStatement(int &index);
 };
 #endif
 
