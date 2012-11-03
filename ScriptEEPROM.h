@@ -38,28 +38,29 @@ class ScriptEEPROM
     void removeLine(int stepNumber); // Delete a step
     // void change(int stepNumber, char c); // Change a step
     int readDec (char * ch);
-	boolean eepromMatch ( char ch, int which );
-	int findLabel ( int index );
+	boolean eepromMatch (char ch, int which, boolean clearResults);
+	int findLabel (int index, boolean debugThis);
+	void writeTestState (int newState);
+	boolean paused;
 
   private:
     int headEEPROM; // EEPROM index
     int testIndex;
-    int testNumber;
     int currentCommand; // Current Test Command
     DebugUtilities debugUtils;    
     // PROGMEM const char * decodeCommand (uint8_t command );
     // int showDecimal (int index);
     int readDecimal (int &testPointer);
     // Return an EEPROM pointer, that points to the next command=cmd
-    void skipToNext (uint8_t cmd); 
     int indexToStep (int indexValue);
     uint8_t readEEPROM ( int index );
+	unsigned long waitTimeout;
 
     int T;
     int E;
     int A;
     int M;
-    void processWire ();
+
     // The eeprom should be able to save 128K of bytes, but only 2 bytes of address? = 64K?
     unsigned long eepromTail;
     unsigned long eepromHead;
@@ -68,6 +69,9 @@ class ScriptEEPROM
     Components components;
     void showStatus();
     int dumpStatement(int &index);
+	void skipTo ( int value, int &index, boolean consume );
+    void printMatchString ( int which );
+
 };
 #endif
 

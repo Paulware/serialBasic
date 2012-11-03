@@ -1,6 +1,6 @@
 #include "ArduinoBASIC.h"
-#define NUMBER_OF_COMMANDS 8
-#define NUMBER_OF_STATEMENTS 18
+#define NUMBER_OF_COMMANDS 9
+#define NUMBER_OF_STATEMENTS 20
  
 ArduinoBASIC::ArduinoBASIC(): 
   commands(NUMBER_OF_COMMANDS), 
@@ -22,6 +22,7 @@ void ArduinoBASIC::init()
   commands.addString ( PSTR ( "remove"));         //  5
   commands.addString ( PSTR ( "load"));           //  6
   commands.addString ( PSTR ( "stop"));           //  7
+  commands.addString ( PSTR ( "showTestState"));  //  8
    
   statements.addString ( PSTR ( "endtest" ));     //  0
   statements.addString ( PSTR ( "wait" ));        //  1
@@ -41,6 +42,8 @@ void ArduinoBASIC::init()
   statements.addString ( PSTR ( "showMatches"));  // 15
   statements.addString ( PSTR ( "checkMatch"));   // 16
   statements.addString ( PSTR ( ":"));            // 17
+  statements.addString ( PSTR ( "clearMatches")); // 18
+  statements.addString ( PSTR ( "testState"));    // 19
 }
 
 void ArduinoBASIC::continueStatement ( char ch )
@@ -62,6 +65,7 @@ void ArduinoBASIC::loadProgram (PSTRStrings & cannedProgram  )
   int len; 
   int start;
   int match;
+  boolean ok = true;
   
   eepromProgram.clear();
   debugUtils.printPSTR ( PSTR ( "Load program: (" ) );
@@ -94,12 +98,16 @@ void ArduinoBASIC::loadProgram (PSTRStrings & cannedProgram  )
        debugUtils.printPSTR ( PSTR ( "Could not match canned statement : " ) );
        cannedProgram.printString ( i );
        Serial.println ();
+	   ok = false;
+	   break;
     }  
   }
   eepromProgram.addCh (0, true); // Add program termination        
-  
-  debugUtils.printPSTR ( PSTR ( "Show steps:\n" ) );
-  eepromProgram.showSteps();
+  if (ok)
+  {  
+    debugUtils.printPSTR ( PSTR ( "Show steps:\n" ) );
+    eepromProgram.showSteps();
+  }	
 }
 
 void ArduinoBASIC::handleChar ( PSTRStrings & cannedProgram, char ch  )
@@ -162,9 +170,13 @@ void ArduinoBASIC::handleChar ( PSTRStrings & cannedProgram, char ch  )
           loadProgram ( cannedProgram );
           break;
         case 7: // Stop the program 
-          eepromProgram.testState = 0; 
-          debugUtils.printPSTR ( PSTR ( "*Stopped*" ) );
+          eepromProgram.writeTestState (0); 
+          debugUtils.printPSTR ( PSTR ( "*Test now idle*" ) );
           break; 
+		case 8: // Show test state
+          debugUtils.printPSTR ( PSTR ( "Test state: " ) );
+          Serial.println ( eepromProgram.testState);
+          break;		  
         default:
           break;
       }
