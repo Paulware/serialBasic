@@ -6,9 +6,9 @@ class DebugUtilities
   public:          
     // Constructor
     DebugUtilities();  
-    boolean debugging (); 
-    void printPSTR ( PGM_P s );
+    bool debugging (); 
     void showNumber ( PGM_P s, int number );
+    void printPSTR ( PGM_P s );
 
   // private:
 };

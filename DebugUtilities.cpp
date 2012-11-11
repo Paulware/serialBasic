@@ -24,7 +24,7 @@ void DebugUtilities::showNumber ( PGM_P s, int number )
   #endif
 }
 
-boolean DebugUtilities::debugging () 
+bool DebugUtilities::debugging () 
 {
   #ifdef DEBUGIT
     return true;

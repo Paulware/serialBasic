@@ -20,11 +20,11 @@ class ScriptEEPROM
     ScriptEEPROM(PSTRStrings * _statements, PSTRStrings * _commands);
     void showSteps ();
     int findStep ( int step ); 
-    boolean addCh (char ch, boolean incrementHead);
+    bool addCh (char ch, bool incrementHead);
     int numSteps (); 
     void reset(); // Stop test
     void continueTest();
-    void executeStep (boolean &stepDone);
+    void executeStep (bool &stepDone);
     void clear();  // Clear out the script
     
     const prog_char * testStatus ();
@@ -38,14 +38,18 @@ class ScriptEEPROM
     void removeLine(int stepNumber); // Delete a step
     // void change(int stepNumber, char c); // Change a step
     int readDec (char * ch);
-	boolean eepromMatch (char ch, int which, boolean clearResults);
-	int findLabel (int index, boolean debugThis);
+	bool eepromMatch (char ch, int which, bool clearResults);
+	int findLabel (int index, bool debugThis);
 	void writeTestState (int newState);
-	boolean paused;
+	bool paused;
+	bool nextCommand ( int &value, int &index );
+    int maxStatements();
+
 
   private:
-    int headEEPROM; // EEPROM index
+    int numStatements; // EEPROM index
     int testIndex;
+	int nestingLevel;  // How deep are we into if statements
     int currentCommand; // Current Test Command
     DebugUtilities debugUtils;    
     // PROGMEM const char * decodeCommand (uint8_t command );
@@ -69,9 +73,10 @@ class ScriptEEPROM
     Components components;
     void showStatus();
     int dumpStatement(int &index);
-	void skipTo ( int value, int &index, boolean consume );
+	void skipTo ( int value, int &index, bool consume );
     void printMatchString ( int which );
-
+	void skipToEndElse ( int &index);
+	int nextCommand (int &index);
 };
 #endif
 

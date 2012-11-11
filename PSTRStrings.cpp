@@ -1,9 +1,10 @@
 #include "PSTRStrings.h"
 #include <EEPROM.h>
 
-boolean PSTRStrings::checkMatch (int which)
+
+bool PSTRStrings::checkMatch (int which)
 {  
-  boolean match = false;
+  bool match = false;
   CommandStringType * str;
   str = &strings [which]; 
   
@@ -117,7 +118,7 @@ char PSTRStrings::charAt ( int i, int j)
   int len = str->len;
   char ch = 0;
   char * ptr; 
-  boolean debugThis = false;
+  bool debugThis = false;
 
   /* 
     if (i>=numStrings)
@@ -262,7 +263,7 @@ int PSTRStrings::intersect ( PSTRStrings * targetList, int index )
 }
 
 // Check all strings for matches using the supplied ch.
-int PSTRStrings::matchString ( char ch, boolean doDebug ) 
+int PSTRStrings::matchString ( char ch, bool doDebug ) 
 {
   int matched = -1;
   char c;  

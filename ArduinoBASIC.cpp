@@ -1,6 +1,6 @@
 #include "ArduinoBASIC.h"
 #define NUMBER_OF_COMMANDS 9
-#define NUMBER_OF_STATEMENTS 20
+#define NUMBER_OF_STATEMENTS 21
  
 ArduinoBASIC::ArduinoBASIC(): 
   commands(NUMBER_OF_COMMANDS), 
@@ -44,6 +44,7 @@ void ArduinoBASIC::init()
   statements.addString ( PSTR ( ":"));            // 17
   statements.addString ( PSTR ( "clearMatches")); // 18
   statements.addString ( PSTR ( "testState"));    // 19
+  statements.addString ( PSTR ( "else"));         // 20
 }
 
 void ArduinoBASIC::continueStatement ( char ch )
@@ -65,7 +66,7 @@ void ArduinoBASIC::loadProgram (PSTRStrings & cannedProgram  )
   int len; 
   int start;
   int match;
-  boolean ok = true;
+  bool ok = true;
   
   eepromProgram.clear();
   debugUtils.printPSTR ( PSTR ( "Load program: (" ) );

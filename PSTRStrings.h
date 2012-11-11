@@ -17,7 +17,7 @@ class PSTRStrings
   public:          
     // Constructor
     PSTRStrings(int _numberOfStrings);
-    int matchString ( char ch, boolean doDebug); 
+    int matchString ( char ch, bool doDebug); 
     void printString ( int which );
     void addString (const prog_char * s);
     void show ( int startValue, int stopValue ); 
@@ -30,7 +30,7 @@ class PSTRStrings
     void clearIndexes();
     int stringLen( int which);
     int intersect ( PSTRStrings * targetList, int index );  
-    boolean checkMatch (int which);
+    bool checkMatch (int which);
 	
     int numStrings;
     
