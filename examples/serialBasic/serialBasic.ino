@@ -3,11 +3,10 @@
 
 ArduinoBASIC arduinoBASIC = ArduinoBASIC ();
 DebugUtilities debugUtils;
-unsigned long runTimeout;
 
-#define NUMBER_OF_STEPS 10
+#define NUMBER_OF_STEPS 15
 PSTRStrings eProgram = PSTRStrings(NUMBER_OF_STEPS);
-boolean paused;
+bool paused;
 
 void callback (int value)
 {
@@ -15,7 +14,7 @@ void callback (int value)
   Serial.println ( value );
 }
 
-
+unsigned long runTimeout;
 void setup()
 {  
   Serial.begin (115200);
@@ -23,15 +22,17 @@ void setup()
   arduinoBASIC.init();
   arduinoBASIC.eepromProgram.callback = callback;
     
-  eProgram.addString ( PSTR ( "setA=1" )); 
+  eProgram.addString ( PSTR ( "setA=0" )); 
   eProgram.addString ( PSTR ( "ifA")); 
-  eProgram.addString ( PSTR ( "echoA is set"));
+  eProgram.addString ( PSTR ( "ifA"));
+  eProgram.addString ( PSTR ( "echooops A is set"));
   eProgram.addString ( PSTR ( "callback1"));
-  eProgram.addString ( PSTR ( "jumplabelA" )); 
-  eProgram.addString ( PSTR ( "endif")); 
-  eProgram.addString ( PSTR ( "callback2"));
+  eProgram.addString ( PSTR ( "endif"));
+  eProgram.addString ( PSTR ( "else"));
+  eProgram.addString ( PSTR ( "ifA=0"));
   eProgram.addString ( PSTR ( "echoA is not set"));
-  eProgram.addString ( PSTR ( ":labelA" )); 
+  eProgram.addString ( PSTR ( "endif"));
+  eProgram.addString ( PSTR ( "endif"));
   eProgram.addString ( PSTR ( "echoAll done!"));
 
   runTimeout = millis() + 10000;
@@ -41,6 +42,7 @@ void setup()
 
 void loop()
 {
+  static unsigned long runTimeout;
   if (runTimeout)
   {
     if (millis() > runTimeout)
