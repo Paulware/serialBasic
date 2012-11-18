@@ -13,7 +13,7 @@ uint8_t ScriptEEPROM::readEEPROM ( int index )
   return value;
 }
 
-ScriptEEPROM::ScriptEEPROM(PSTRStrings * _statements, PSTRStrings * _commands):components()
+ScriptEEPROM::ScriptEEPROM(PSTRStrings * _statements, PSTRStrings * _commands):components(),sevenSegment()
 { 
   statements = _statements;
   commands = _commands;
@@ -771,6 +771,7 @@ void ScriptEEPROM::executeStep(bool &stepDone)
   int compareValue;
   bool debugThis = false;
   bool ifTrue = false;
+  static byte pins[7];
 
   if (debugThis)
     showStatus();
@@ -1120,7 +1121,27 @@ void ScriptEEPROM::executeStep(bool &stepDone)
 	  
 	case 20: // else 
 	  skipTo(4,testIndex, true); // Skip to end if
-      break;	
+      break;
+      
+    case 21: // 7 segment init
+      index = readDecimal (testIndex);
+      for (int i=0; i<7; i++)
+        pins[i] = index+i;
+      sevenSegment.setPins(&pins[0]);
+      break;
+      
+    case 22: // 7 segment value
+      varName = readEEPROM ( testIndex++);
+      switch (varName)
+      {
+        case 'A':
+          index = A;
+          break;
+        default:
+          break;
+      }        
+      sevenSegment.print ( index );
+      break;  	
 	        
     default:
       done = false;
@@ -1128,7 +1149,7 @@ void ScriptEEPROM::executeStep(bool &stepDone)
   } 
 
   if (done)
-    testIndex++;
+    testIndex++; // Consume the zero terminator
     
   stepDone = done; 
   //debugUtils.printPSTR ( PSTR ( "cc:" ));

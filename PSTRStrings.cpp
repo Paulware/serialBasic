@@ -66,7 +66,7 @@ void PSTRStrings::addString ( const prog_char * s)
   }
   
   if (numStrings == numberOfStrings)
-    debugUtils.printPSTR ( PSTR ( "ERR..list full\n" ) );
+    debugUtils.printPSTR ( PSTR ( "ERR..PSTRStrings list full\n" ) );
   else if (numStrings < numberOfStrings) // There is memory allocated for the string
   { 
     str = &strings [numStrings++];  

@@ -1,6 +1,6 @@
 #include "ArduinoBASIC.h"
 #define NUMBER_OF_COMMANDS 9
-#define NUMBER_OF_STATEMENTS 21
+#define NUMBER_OF_STATEMENTS 23
  
 ArduinoBASIC::ArduinoBASIC(): 
   commands(NUMBER_OF_COMMANDS), 
@@ -24,27 +24,29 @@ void ArduinoBASIC::init()
   commands.addString ( PSTR ( "stop"));           //  7
   commands.addString ( PSTR ( "showTestState"));  //  8
    
-  statements.addString ( PSTR ( "endtest" ));     //  0
-  statements.addString ( PSTR ( "wait" ));        //  1
-  statements.addString ( PSTR ( "relay" ));       //  2
-  statements.addString ( PSTR ( "echo" ));        //  3
-  statements.addString ( PSTR ( "endif" ));       //  4
-  statements.addString ( PSTR ( "if" ) );         //  5
-  statements.addString ( PSTR ( "jump" ));        //  6
-  statements.addString ( PSTR ( "lcd" ));         //  7
-  statements.addString ( PSTR ( "read" ));        //  8   
-  statements.addString ( PSTR ( "set"));          //  9 
-  statements.addString ( PSTR ( "callback"));     // 10
-  statements.addString ( PSTR ( "thermistor"));   // 11
-  statements.addString ( PSTR ( "startTimer"));   // 12
-  statements.addString ( PSTR ( "delay"));        // 13
-  statements.addString ( PSTR ( "addMatch"));     // 14
-  statements.addString ( PSTR ( "showMatches"));  // 15
-  statements.addString ( PSTR ( "checkMatch"));   // 16
-  statements.addString ( PSTR ( ":"));            // 17
-  statements.addString ( PSTR ( "clearMatches")); // 18
-  statements.addString ( PSTR ( "testState"));    // 19
-  statements.addString ( PSTR ( "else"));         // 20
+  statements.addString ( PSTR ( "endtest" ));      //  0
+  statements.addString ( PSTR ( "wait" ));         //  1
+  statements.addString ( PSTR ( "relay" ));        //  2
+  statements.addString ( PSTR ( "echo" ));         //  3
+  statements.addString ( PSTR ( "endif" ));        //  4
+  statements.addString ( PSTR ( "if" ) );          //  5
+  statements.addString ( PSTR ( "jump" ));         //  6
+  statements.addString ( PSTR ( "lcd" ));          //  7
+  statements.addString ( PSTR ( "read" ));         //  8   
+  statements.addString ( PSTR ( "set"));           //  9 
+  statements.addString ( PSTR ( "callback"));      // 10
+  statements.addString ( PSTR ( "thermistor"));    // 11
+  statements.addString ( PSTR ( "startTimer"));    // 12
+  statements.addString ( PSTR ( "delay"));         // 13
+  statements.addString ( PSTR ( "addMatch"));      // 14
+  statements.addString ( PSTR ( "showMatches"));   // 15
+  statements.addString ( PSTR ( "checkMatch"));    // 16
+  statements.addString ( PSTR ( ":"));             // 17
+  statements.addString ( PSTR ( "clearMatches"));  // 18
+  statements.addString ( PSTR ( "testState"));     // 19
+  statements.addString ( PSTR ( "else"));          // 20
+  statements.addString ( PSTR ( "7SegmentInit"));  // 21
+  statements.addString ( PSTR ( "7SegmentValue")); // 22
 }
 
 void ArduinoBASIC::continueStatement ( char ch )

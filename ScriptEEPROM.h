@@ -6,6 +6,7 @@
 #include "DebugUtilities.h"
 #include "PSTRStrings.h"
 #include "Components.h"
+#include "SevenSegment.h"
 
 #define MAX_EEPROM_BUFFER 1024
 
@@ -77,6 +78,7 @@ class ScriptEEPROM
     void printMatchString ( int which );
 	void skipToEndElse ( int &index);
 	int nextCommand (int &index);
+	SevenSegment sevenSegment;
 };
 #endif
 
