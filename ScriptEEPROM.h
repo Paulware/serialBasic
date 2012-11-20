@@ -7,6 +7,7 @@
 #include "PSTRStrings.h"
 #include "Components.h"
 #include "SevenSegment.h"
+#include "LiquidCrystal.h"
 
 #define MAX_EEPROM_BUFFER 1024
 
@@ -79,6 +80,7 @@ class ScriptEEPROM
 	void skipToEndElse ( int &index);
 	int nextCommand (int &index);
 	SevenSegment sevenSegment;
+	LiquidCrystal liquidCrystal;
 };
 #endif
 

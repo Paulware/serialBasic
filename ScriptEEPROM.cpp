@@ -13,7 +13,7 @@ uint8_t ScriptEEPROM::readEEPROM ( int index )
   return value;
 }
 
-ScriptEEPROM::ScriptEEPROM(PSTRStrings * _statements, PSTRStrings * _commands):components(),sevenSegment()
+ScriptEEPROM::ScriptEEPROM(PSTRStrings * _statements, PSTRStrings * _commands):components(),sevenSegment(),liquidCrystal()
 { 
   statements = _statements;
   commands = _commands;
@@ -772,6 +772,7 @@ void ScriptEEPROM::executeStep(bool &stepDone)
   bool debugThis = false;
   bool ifTrue = false;
   static byte pins[7];
+  char oneCh[] = " ";
 
   if (debugThis)
     showStatus();
@@ -1142,6 +1143,26 @@ void ScriptEEPROM::executeStep(bool &stepDone)
       }        
       sevenSegment.print ( index );
       break;  	
+    
+    case 23: // LCD Display init
+      liquidCrystal.begin ( 20,4);
+      break;
+      
+    case 24: // LCD Display clear
+      liquidCrystal.clear();
+      break;
+      
+    case 25: // LCD Display print 
+      while (true)
+      {
+        value = readEEPROM ( testIndex);
+        if (!value)
+          break;
+        oneCh[0] = (char) value;  
+        liquidCrystal.print (&oneCh[0]);  
+        testIndex++; // next character  
+      } 
+      break;
 	        
     default:
       done = false;
